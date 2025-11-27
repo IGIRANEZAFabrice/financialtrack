@@ -137,6 +137,21 @@ export const getAdminById = async (id) => {
   }
 };
 
+export const updateAdmin = async (id, { username, full_name, email, password }) => {
+  try {
+    await db.runAsync(
+      `UPDATE admin 
+       SET username = ?, full_name = ?, email = ?, password = ?, updated_at = datetime('now')
+       WHERE id = ?`,
+      [username, full_name, email, password, id]
+    );
+    return true;
+  } catch (error) {
+    console.error('Update admin error:', error);
+    throw error;
+  }
+};
+
 // Finance operations
 export const addFinance = async (adminId, data) => {
   try {
@@ -166,6 +181,59 @@ export const getAllFinances = async (adminId) => {
     return finances;
   } catch (error) {
     console.error('Get finances error:', error);
+    throw error;
+  }
+};
+
+export const getStatuses = async () => {
+  try {
+    const statuses = await db.getAllAsync(
+      'SELECT * FROM status ORDER BY sort_order ASC'
+    );
+    return statuses;
+  } catch (error) {
+    console.error('Get statuses error:', error);
+    throw error;
+  }
+};
+
+export const getFinanceById = async (id) => {
+  try {
+    const finance = await db.getFirstAsync(
+      `SELECT f.*, s.status_name, s.color 
+       FROM finance f 
+       LEFT JOIN status s ON f.status_id = s.id 
+       WHERE f.id = ?`,
+      [id]
+    );
+    return finance;
+  } catch (error) {
+    console.error('Get finance by id error:', error);
+    throw error;
+  }
+};
+
+export const updateFinance = async (id, data) => {
+  try {
+    await db.runAsync(
+      `UPDATE finance 
+       SET name = ?, phone = ?, email = ?, money_provided = ?, money_returned = ?, due_date = ?, notes = ?, status_id = ?, updated_at = datetime('now')
+       WHERE id = ?`,
+      [
+        data.name,
+        data.phone,
+        data.email,
+        data.money_provided,
+        data.money_returned ?? 0,
+        data.due_date,
+        data.notes,
+        data.status_id,
+        id,
+      ]
+    );
+    return true;
+  } catch (error) {
+    console.error('Update finance error:', error);
     throw error;
   }
 };
